@@ -1,32 +1,43 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
+using UnityEditor;
 
 public class MeshController : MonoBehaviour
 {
-    public GameObject complexMesh;
-    public GameObject simplifiedMesh;
-    void Start()
-    {
-        MeshFilter meshFilter1 = complexMesh.GetComponent<MeshFilter>();
-        ReverseNormals(meshFilter1.mesh);
+    [SerializeField]
+    private GameObject[] meshGameObjects;
 
-        MeshFilter meshFilter2 = simplifiedMesh.GetComponent<MeshFilter>();
-        ReverseNormals(meshFilter2.mesh);
-        meshFilter2.mesh = SimplifyMesh(meshFilter2.mesh);
-        simplifiedMesh.AddComponent<MeshCollider>();
-        simplifiedMesh.GetComponent<MeshRenderer>().enabled = false;
+    [SerializeField] public bool createSaveMeshCollider;
+
+    public void Start()
+    {
+        if (!createSaveMeshCollider) return;
+        foreach (var meshGameObject in meshGameObjects)
+        {
+            ModifyMeshGameObject(meshGameObject);
+        }
+    }
+
+    private void ModifyMeshGameObject(GameObject complexMeshGameObject)
+    {
+        Mesh originalMesh = complexMeshGameObject.GetComponent<MeshFilter>().sharedMesh;
+
+        Mesh simplifiedMesh = SimplifyMesh(originalMesh, 0.3f);
+
+        complexMeshGameObject.AddComponent<MeshCollider>().sharedMesh = simplifiedMesh;
+        
+        var savePath = "Assets/Meshes/" + "colliderMesh" + ".asset";
+        Debug.Log("Saved Mesh to:" + savePath);
+        AssetDatabase.CreateAsset(simplifiedMesh, savePath);
+        
     }
     
-    private Mesh SimplifyMesh(Mesh sourceMesh)
+    private Mesh SimplifyMesh(Mesh sourceMesh, float quality)
     {
-        float quality = 0.5f;
         var meshSimplifier = new UnityMeshSimplifier.MeshSimplifier();
         meshSimplifier.Initialize(sourceMesh);
         meshSimplifier.SimplifyMesh(quality);
         return meshSimplifier.ToMesh();
     }
-
     private void ReverseNormals(Mesh sourceMesh)
     {
         if (sourceMesh != null)
