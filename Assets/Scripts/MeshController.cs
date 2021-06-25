@@ -20,12 +20,13 @@ public class MeshController : MonoBehaviour
     private void ModifyMeshGameObject(GameObject complexMeshGameObject)
     {
         Mesh originalMesh = complexMeshGameObject.GetComponent<MeshFilter>().sharedMesh;
-
+       
         Mesh simplifiedMesh = SimplifyMesh(originalMesh, 0.3f);
+       // ReverseNormals(simplifiedMesh);
 
         complexMeshGameObject.AddComponent<MeshCollider>().sharedMesh = simplifiedMesh;
         
-        var savePath = "Assets/Meshes/" + "colliderMesh" + ".asset";
+        var savePath = "Assets/Meshes/" + this.gameObject.name + "colliderMesh" + ".asset";
         Debug.Log("Saved Mesh to:" + savePath);
         AssetDatabase.CreateAsset(simplifiedMesh, savePath);
         
