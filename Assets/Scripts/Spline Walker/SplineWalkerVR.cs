@@ -9,27 +9,34 @@ public class SplineWalkerVR : MonoBehaviour
     public float duration;
 
     public float progress;
-    public bool lookForward;
-    private float lerpSpeed = 0.7f;
+    private float lerpSpeed ;
+    private float speed = 1f;
+    public float targetSpeed = 1f;
+    private Quaternion targetRotation;
 
     private void Update()
     {
-        progress += Time.deltaTime / duration;
+        
+        lerpSpeed = Time.deltaTime * 0.85f;
+        speed = Mathf.Lerp(speed, targetSpeed, lerpSpeed);
+        progress += speed * Time.deltaTime / duration;
         if (progress > 1f)
         {
-            progress = 1f;
+            progress -= 1f;
         }
 
         Vector3 position = spline.GetPoint(progress);
         transform.localPosition = position;
-        Quaternion targetRotation;
-        if (progress > 0.5f)
+        
+        if (progress > 0.36f)
         {
             targetRotation = Quaternion.LookRotation( spline.GetDirection(progress) + position - transform.position);
+            targetSpeed = 0.25f;
         }
         else
         {
-          targetRotation = Quaternion.LookRotation( target  - transform.position);
+            targetRotation = Quaternion.LookRotation( target  - transform.position);
+            targetSpeed = 1f;
         }
         transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, lerpSpeed);
     }
